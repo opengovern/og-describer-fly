@@ -48,7 +48,7 @@ var describerCmd = &cobra.Command{
 			IntegrationType: global.IntegrationTypeLower,
 			CipherText:      "",
 			IntegrationLabels: map[string]string{
-				"AppName": "AppName",
+				"AppName": AppName,
 			},
 			IntegrationAnnotations: nil,
 		}
@@ -57,7 +57,7 @@ var describerCmd = &cobra.Command{
 		logger, _ := zap.NewProduction()
 
 		creds, err := provider.AccountCredentialsFromMap(map[string]any{
-			"token": "FlyV1 fm2_lJPECAAAAAAACBDXxBD7ANdkUElUGPZn1cfDsGSEwrVodHRwczovL2FwaS5mbHkuaW8vdjGUAJLOAA42Kh8Lk7lodHRwczovL2FwaS5mbHkuaW8vYWFhL3YxxDyBGaQX+lIsNtJCDfYhXNuQ0aheXzmSvd9zLdiYBGjTDHtuize88AdnHa0oDChKF/p4ZGZtORrgG1uHkDXETgmBIP42/CEBs+lwwk+JCAARG9iV1ybL1XE6nD+fB+7Hf5s3rBcYDPpMcQK2LcRXhtEaSGQ4c+54rlAARurRxv6Veok0I9iUyY/h0j//YsQgngnw3Qq8VM9fv/+YwSeLTuJNn9z2YYET69PxP7tiRKY=,fm2_lJPETgmBIP42/CEBs+lwwk+JCAARG9iV1ybL1XE6nD+fB+7Hf5s3rBcYDPpMcQK2LcRXhtEaSGQ4c+54rlAARurRxv6Veok0I9iUyY/h0j//YsQQ2TgFVddqJpqyIC/vPEbqlsO5aHR0cHM6Ly9hcGkuZmx5LmlvL2FhYS92MZgEks5nisp/zmeUPV0XzgANvzsKkc4ADb87DMQQUBIxjBKv1wDjYm5L+ZmW38QgW5IvR7f6BbHLUKDQ++EUGgYCuikbnE7P5cTBRRfT1CE=",
+			"token": Token,
 		})
 		if err != nil {
 			return fmt.Errorf(" account credentials: %w", err)
