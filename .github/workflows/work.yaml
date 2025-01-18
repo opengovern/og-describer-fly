@@ -42,15 +42,17 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-${{ hashFiles('**/go.mod') }}-
             ${{ runner.os }}-go-
-
-      - name: Build Fly Plugin App
+      - name: Configure Git for Private Repos
+        run: |
+          git config --global url.https://$GH_ACCESS_TOKEN@github.com/opengovern.insteadOf https://github.com/opengovern
+      - name: Build fly Plugin App
         working-directory: ./cloudql
         run: make build
-      - name: Pack Fly Plugin Build
+      - name: Pack fly Plugin Build
         working-directory: ./cloudql
         run: |
           tar -cvf build.tar build
-      - name: Upload Fly Plugin Artifact
+      - name: Upload fly Plugin Artifact
         uses: actions/upload-artifact@v4.6.0
         with:
           name: steampipe-plugin-fly
@@ -113,12 +115,12 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-      - name: Download Fly Plugin Artifact
+      - name: Download fly Plugin Artifact
         uses: actions/download-artifact@v4
         with:
           name: steampipe-plugin-fly
           path: .
-      - name: Unpack Fly Plugin Artifact
+      - name: Unpack fly Plugin Artifact
         run: |
           tar -xvf build.tar
       - name: Log in to Container Registry
@@ -127,7 +129,7 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_PAT }}
-      - name: Build and Push Docker Image for Fly Plugin
+      - name: Build and Push Docker Image for fly Plugin
         uses: docker/build-push-action@v4
         with:
           push: true
