@@ -42,17 +42,15 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-${{ hashFiles('**/go.mod') }}-
             ${{ runner.os }}-go-
-      - name: Configure Git for Private Repos
-        run: |
-          git config --global url.https://$GH_ACCESS_TOKEN@github.com/opengovern.insteadOf https://github.com/opengovern
-      - name: Build fly Plugin App
+
+      - name: Build Fly Plugin App
         working-directory: ./cloudql
         run: make build
-      - name: Pack fly Plugin Build
+      - name: Pack Fly Plugin Build
         working-directory: ./cloudql
         run: |
           tar -cvf build.tar build
-      - name: Upload fly Plugin Artifact
+      - name: Upload Fly Plugin Artifact
         uses: actions/upload-artifact@v4.6.0
         with:
           name: steampipe-plugin-fly
@@ -71,6 +69,14 @@ jobs:
           name: local-og-describer-fly
           path: ./discovery/local.tar
           retention-days: 1
+      - name: Add Tag to Release
+        run: |
+          echo "new_tag=${{ steps.tag_version.outputs.new_tag }}" >> "$GITHUB_OUTPUT"
+          export TAG=${{ steps.tag_version.outputs.new_tag }}
+          ./update-manifest.sh
+        working-directory: ./platform/constants
+      - name: Check manifest file
+        run: cat ./platform/constants/manifest.yaml
       - name: Build Integration Plugin
         working-directory: ./platform
         run: make build
@@ -115,12 +121,12 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-      - name: Download fly Plugin Artifact
+      - name: Download Fly Plugin Artifact
         uses: actions/download-artifact@v4
         with:
           name: steampipe-plugin-fly
           path: .
-      - name: Unpack fly Plugin Artifact
+      - name: Unpack Fly Plugin Artifact
         run: |
           tar -xvf build.tar
       - name: Log in to Container Registry
@@ -129,7 +135,7 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_PAT }}
-      - name: Build and Push Docker Image for fly Plugin
+      - name: Build and Push Docker Image for Fly Plugin
         uses: docker/build-push-action@v4
         with:
           push: true
