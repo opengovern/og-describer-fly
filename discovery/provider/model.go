@@ -274,7 +274,7 @@ type ServiceConcurrency struct {
 
 type ServiceJSON struct {
 	Autostart                bool                   `json:"autostart"`
-	Autostop                 string                 `json:"autostop"`
+	Autostop                 bool                   `json:"autostop"`
 	Checks                   []interface{}          `json:"checks"`
 	Concurrency              ServiceConcurrencyJSON `json:"concurrency"`
 	ForceInstanceDescription string                 `json:"force_instance_description"`
@@ -287,7 +287,7 @@ type ServiceJSON struct {
 
 type Service struct {
 	Autostart                bool
-	Autostop                 string
+	Autostop                 bool
 	Checks                   []interface{}
 	Concurrency              ServiceConcurrency
 	ForceInstanceDescription string
