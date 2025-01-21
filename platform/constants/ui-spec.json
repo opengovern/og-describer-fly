@@ -1,28 +1,28 @@
 {
-  "integration_type_id": "github_account",
-  "integration_name": "GitHub Account",
-  "help_text_md": "GitHub Account integration allows secure connections to your GitHub organizations. [Documentation](https://docs.github.com/en).",
-  "platform_documentation": "https://docs.github.com/en",
-  "provider_documentation": "https://github.com",
-  "icon": "github.svg",
+  "integration_type_id": "fly_account",
+  "integration_name": "Fly.io Account",
+  "help_text_md": "Fly.io",
+  "platform_documentation": "https://fly.io/en",
+  "provider_documentation": "https://fly.io",
+  "icon": "fly_io.svg",
   "discover": {
     "credentials": [
       {
-        "type": "classic_pat",
-        "label": "Classic Personal Access Token (PAT)",
+        "type": "token",
+        "label": "Classic Personal Access Token ",
         "priority": 1,
         "fields": [
           {
-            "name": "pat_token",
+            "name": "token",
             "label": "Personal Access Token",
             "inputType": "password",
             "required": true,
             "order": 1,
             "validation": {
-              "pattern": "^[a-zA-Z0-9]{100}$",
+              "pattern": "^[a-zA-Z0-9]{0,200}$",
               "errorMessage": "Personal Access Token must be a 100-character alphanumeric string."
             },
-            "info": "Your GitHub Personal Access Token with appropriate scopes.",
+            "info": "Your Fly Personal Access Token with appropriate scopes.",
             "external_help_url": "https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token"
           }
         ]
