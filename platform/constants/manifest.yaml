@@ -1,2 +1,5 @@
-IntegrationType: fly
+IntegrationType: fly_account
 DescriberURL:  ghcr.io/opengovern/og-describer-fly
+Publisher: opencomply.io
+Author : opencomply engineering team
+SupportedPlatformVersion: 2.x.x
