@@ -19,7 +19,7 @@
             "required": true,
             "order": 1,
             "validation": {
-              "pattern": "^[a-zA-Z0-9]{0,200}$",
+              "pattern": "^[a-zA-Z0-9+_/-]{0,200}$",
               "errorMessage": "Access token must be at least 600-character alphanumeric string."
             },
             "info": "Your Fly Token with appropriate scopes.",
