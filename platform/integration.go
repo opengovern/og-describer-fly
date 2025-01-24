@@ -83,14 +83,19 @@ func (i *Integration) DiscoverIntegrations(jsonData []byte) ([]integration.Integ
 	return integrations, nil
 }
 
-func (i *Integration) GetResourceTypesByLabels(labels map[string]string) (map[string]interfaces.ResourceTypeConfiguration, error) {
-	resourceTypesMap := make(map[string]interfaces.ResourceTypeConfiguration)
+func (i *Integration) GetResourceTypesByLabels(labels map[string]string) ([]interfaces.ResourceTypeConfiguration, error) {
+	var resourceTypesMap  []interfaces.ResourceTypeConfiguration
 	for _, resourceType := range maps.ResourceTypesList {
+		var resource  interfaces.ResourceTypeConfiguration
 		if v, ok := maps.ResourceTypeConfigs[resourceType]; ok {
-			resourceTypesMap[resourceType] = *v
-		} else {
-			resourceTypesMap[resourceType] = interfaces.ResourceTypeConfiguration{}
-		}
+			resource.Description =v.Description
+			resource.Params =v.Params
+			resource.Name = v.Name
+			resource.IntegrationType = v.IntegrationType
+			resource.Table =  maps.ResourceTypesToTables[v.Name]
+			resourceTypesMap = append(resourceTypesMap, resource)
+			
+		} 
 	}
 	return resourceTypesMap, nil
 }
