@@ -38,18 +38,18 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 
 		opengovernanceTable := false
 		for _, col := range table.Columns {
-			if col != nil && col.Name == "platform_account_id" {
+			if col != nil && col.Name == "platform_integration_id" {
 				opengovernanceTable = true
 			}
 		}
 
 		if opengovernanceTable {
 			if table.Get != nil {
-				table.Get.KeyColumns = append(table.Get.KeyColumns, plugin.OptionalColumns([]string{"platform_account_id", "platform_resource_id"})...)
+				table.Get.KeyColumns = append(table.Get.KeyColumns, plugin.OptionalColumns([]string{"platform_integration_id", "platform_resource_id"})...)
 			}
 
 			if table.List != nil {
-				table.List.KeyColumns = append(table.List.KeyColumns, plugin.OptionalColumns([]string{"platform_account_id", "platform_resource_id"})...)
+				table.List.KeyColumns = append(table.List.KeyColumns, plugin.OptionalColumns([]string{"platform_integration_id", "platform_resource_id"})...)
 			}
 		}
 	}
