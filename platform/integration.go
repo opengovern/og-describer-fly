@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgtype"
 	"github.com/opengovern/og-describer-fly/global"
 	"github.com/opengovern/og-describer-fly/global/maps"
@@ -67,7 +66,6 @@ func (i *Integration) DiscoverIntegrations(jsonData []byte) ([]integration.Integ
 	}
 	integrationLabelsJsonb := pgtype.JSONB{}
 	// generate uuid
-	id:= uuid.New()
 	labels := map[string]string{
 			"OrganizationName": credentials.OrganizationName,
 		}
@@ -80,7 +78,7 @@ func (i *Integration) DiscoverIntegrations(jsonData []byte) ([]integration.Integ
 		return nil, err
 	}
 	integrations = append(integrations, integration.Integration{
-			ProviderID: id.String(),
+			ProviderID: credentials.OrganizationName,
 			Name:       credentials.OrganizationName,
 			Labels:     integrationLabelsJsonb,
 		})
