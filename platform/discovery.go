@@ -10,6 +10,7 @@ import (
 // ConfigDiscovery represents the JSON input configuration
 type ConfigDiscovery struct {
 	Token string `json:"token"`
+	OrganizationName string `json:"organizationName"`
 }
 
 type App struct {
@@ -23,10 +24,10 @@ type Response struct {
 }
 
 // Discover retrieves fly user info
-func Discover(token string) ([]App, error) {
+func Discover(token string,organization_name string) ([]App, error) {
 	var response Response
 
-	url := "https://api.machines.dev/v1/apps?org_slug=personal"
+	url := fmt.Sprintf("https://api.buildpacks.io/v1/apps?org_slug=%s", organization_name)
 
 	client := http.DefaultClient
 
@@ -54,6 +55,9 @@ func FlyIntegrationDiscovery(cfg ConfigDiscovery) ([]App, error) {
 	if cfg.Token == "" {
 		return nil, errors.New("token must be configured")
 	}
+	if cfg.OrganizationName == "" {
+		return nil, errors.New("organizationName must be configured")
+	}
 
-	return Discover(cfg.Token)
+	return Discover(cfg.Token,cfg.OrganizationName)
 }

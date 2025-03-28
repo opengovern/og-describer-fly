@@ -14,10 +14,10 @@ type ConfigHealthCheck struct {
 }
 
 // IsHealthy checks if the JWT has read access to all required resources
-func IsHealthy(token, appName string) error {
+func IsHealthy(token string) error {
 	var app App
 
-	url := fmt.Sprintf("https://api.machines.dev/v1/apps/%s", appName)
+	url := "https://api.buildpacks.io/v1/apps?org_slug=personal"
 
 	client := http.DefaultClient
 
@@ -46,11 +46,8 @@ func FlyIntegrationHealthcheck(cfg ConfigHealthCheck) (bool, error) {
 		return false, errors.New("token must be configured")
 	}
 
-	if cfg.AppName == "" {
-		return false, errors.New("app name must be configured")
-	}
-
-	err := IsHealthy(cfg.Token, cfg.AppName)
+	
+	err := IsHealthy(cfg.Token)
 	if err != nil {
 		return false, err
 	}

@@ -20,6 +20,9 @@ func DescribeListByFly(describe func(context.Context, *resilientbridge.Resilient
 		if cfg.Token == "" {
 			return nil, errors.New("token must be configured")
 		}
+		if cfg.OrganizationName == "" {
+			return nil, errors.New("organization_slug must be configured")
+		}
 
 		resilientBridge := resilientbridge.NewResilientBridge()
 
@@ -35,10 +38,9 @@ func DescribeListByFly(describe func(context.Context, *resilientbridge.Resilient
 			BaseBackoff:         200 * time.Millisecond,
 		})
 
-		appName := additionalParameters["AppName"]
 		// Get values from describers
 		var values []models.Resource
-		result, err := describe(ctx, resilientBridge, appName, stream)
+		result, err := describe(ctx, resilientBridge, cfg.OrganizationName, stream)
 		if err != nil {
 			return nil, err
 		}

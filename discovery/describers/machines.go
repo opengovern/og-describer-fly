@@ -4,13 +4,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/url"
+	"sync"
+
 	"github.com/opengovern/og-describer-fly/discovery/pkg/models"
 	"github.com/opengovern/og-describer-fly/discovery/provider"
 	resilientbridge "github.com/opengovern/resilient-bridge"
-	"sync"
 )
 
-func ListMachines(ctx context.Context, handler *resilientbridge.ResilientBridge, appName string, stream *models.StreamSender) ([]models.Resource, error) {
+func ListMachines(ctx context.Context, handler *resilientbridge.ResilientBridge, org_slug string, stream *models.StreamSender) ([]models.Resource, error) {
 	var wg sync.WaitGroup
 	flyChan := make(chan models.Resource)
 	errorChan := make(chan error, 1) // Buffered channel to capture errors
@@ -18,7 +20,7 @@ func ListMachines(ctx context.Context, handler *resilientbridge.ResilientBridge,
 	go func() {
 		defer close(flyChan)
 		defer close(errorChan)
-		if err := processMachines(ctx, handler, appName, flyChan, &wg); err != nil {
+		if err := processMachines(ctx, handler, org_slug, flyChan, &wg); err != nil {
 			errorChan <- err // Send error to the error channel
 		}
 		wg.Wait()
@@ -450,15 +452,40 @@ func GetMachine(ctx context.Context, handler *resilientbridge.ResilientBridge, a
 	return &value, nil
 }
 
-func processMachines(ctx context.Context, handler *resilientbridge.ResilientBridge, appName string, flyChan chan<- models.Resource, wg *sync.WaitGroup) error {
-	var machines []provider.MachineJSON
-	baseURL := "/apps/"
+func processMachines(ctx context.Context, handler *resilientbridge.ResilientBridge, org_slug string, flyChan chan<- models.Resource, wg *sync.WaitGroup) error {
+	var ListAppResponse provider.ListAppsResponse
+	baseURL := "/apps"
 
-	finalURL := fmt.Sprintf("%s%s/machines", baseURL, appName)
+	params := url.Values{}
+	params.Set("org_slug", org_slug)
+	finalURL := fmt.Sprintf("%s?%s", baseURL, params.Encode())
 
 	req := &resilientbridge.NormalizedRequest{
 		Method:   "GET",
 		Endpoint: finalURL,
+		Headers:  map[string]string{"Content-Type": "application/json"},
+	}
+	resp, err := handler.Request("fly", req)
+	if err != nil {
+		return fmt.Errorf("request execution failed: %w", err)
+	}
+	if resp.StatusCode >= 400 {
+		return fmt.Errorf("error %d: %s", resp.StatusCode, string(resp.Data))
+	}
+
+	if err = json.Unmarshal(resp.Data, &ListAppResponse); err != nil {
+		return fmt.Errorf("error parsing response: %w", err)
+	}
+	for _, app := range ListAppResponse.Apps{
+		var machines []provider.MachineJSON
+
+	baseURL1 := "/apps/"
+
+	finalURL1 := fmt.Sprintf("%s%s/machines", baseURL1, app.Name)
+
+	req := &resilientbridge.NormalizedRequest{
+		Method:   "GET",
+		Endpoint: finalURL1,
 		Headers:  map[string]string{"accept": "application/json"},
 	}
 
@@ -880,6 +907,10 @@ func processMachines(ctx context.Context, handler *resilientbridge.ResilientBrid
 			flyChan <- value
 		}(machine)
 	}
+
+	}
+	
+	
 	return nil
 }
 

@@ -11,14 +11,14 @@ import (
 	"sync"
 )
 
-func ListApps(ctx context.Context, handler *resilientbridge.ResilientBridge, appName string, stream *models.StreamSender) ([]models.Resource, error) {
+func ListApps(ctx context.Context, handler *resilientbridge.ResilientBridge,org_slug string, stream *models.StreamSender) ([]models.Resource, error) {
 	var wg sync.WaitGroup
 	flyChan := make(chan models.Resource)
 	errorChan := make(chan error, 1) // Buffered channel to capture errors
 	go func() {
 		defer close(flyChan)
 		defer close(errorChan)
-		if err := processApps(ctx, handler, flyChan, &wg); err != nil {
+		if err := processApps(ctx, handler, flyChan, &wg,org_slug); err != nil {
 			errorChan <- err // Send error to the error channel
 		}
 		wg.Wait()
@@ -62,12 +62,12 @@ func GetApp(ctx context.Context, handler *resilientbridge.ResilientBridge, appNa
 	return &value, nil
 }
 
-func processApps(ctx context.Context, handler *resilientbridge.ResilientBridge, flyChan chan<- models.Resource, wg *sync.WaitGroup) error {
+func processApps(ctx context.Context, handler *resilientbridge.ResilientBridge, flyChan chan<- models.Resource, wg *sync.WaitGroup,org_slug string) error {
 	var ListAppResponse provider.ListAppsResponse
 	baseURL := "/apps"
 
 	params := url.Values{}
-	params.Set("org_slug", "personal")
+	params.Set("org_slug", org_slug)
 	finalURL := fmt.Sprintf("%s?%s", baseURL, params.Encode())
 
 	req := &resilientbridge.NormalizedRequest{

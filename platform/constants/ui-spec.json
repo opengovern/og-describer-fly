@@ -24,7 +24,20 @@
             },
             "info": "Your Fly Token with appropriate scopes.",
             "external_help_url": "https://fly.io/docs/security/tokens/"
-          }
+          },
+           {
+             "name": "organization_slug",
+             "label": "Organization slug",
+             "inputType": "text",
+             "required": true,
+             "order": 1,
+             "validation": {
+               "pattern": "^[a-zA-Z0-9+_/-]{0,200}$",
+               "errorMessage": "Access token must be at least 600-character alphanumeric string."
+             },
+             "info": "Your Fly organization slug.",
+             "external_help_url": "https://fly.io/docs/security/tokens/"
+           }
         ]
       }
     ],

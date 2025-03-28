@@ -2,3 +2,6 @@ build/
 og-describer-template
 .idea
 output.json
+discovery/local/cmd/describer.go
+.vscode/launch.json
+discovery/local/cmd/describer.go

@@ -2,6 +2,8 @@ package main
 
 import (
 	"encoding/json"
+
+	"github.com/google/uuid"
 	"github.com/jackc/pgtype"
 	"github.com/opengovern/og-describer-fly/global"
 	"github.com/opengovern/og-describer-fly/global/maps"
@@ -37,13 +39,10 @@ func (i *Integration) HealthCheck(jsonData []byte, providerId string, labels map
 	if err != nil {
 		return false, err
 	}
-	var appName string
-	if v, ok := labels["AppName"]; ok {
-		appName = v
-	}
+	
 	isHealthy, err := FlyIntegrationHealthcheck(ConfigHealthCheck{
 		Token:   credentials.Token,
-		AppName: appName,
+	
 	})
 
 	return isHealthy, err
@@ -59,26 +58,22 @@ func (i *Integration) DiscoverIntegrations(jsonData []byte) ([]integration.Integ
 	apps, err := FlyIntegrationDiscovery(ConfigDiscovery{
 		Token: credentials.Token,
 	})
-	for _, app := range apps {
-		labels := map[string]string{
-			"AppName": app.Name,
-			"Status":  app.Status,
-		}
-		labelsJsonData, err := json.Marshal(labels)
-		if err != nil {
-			return nil, err
-		}
-		integrationLabelsJsonb := pgtype.JSONB{}
-		err = integrationLabelsJsonb.Set(labelsJsonData)
-		if err != nil {
-			return nil, err
-		}
-		integrations = append(integrations, integration.Integration{
-			ProviderID: app.ID,
-			Name:       app.Name,
+	if err != nil {
+		return nil, err
+	}
+	if(len(apps) == 0) {
+		return integrations, nil
+	}
+	integrationLabelsJsonb := pgtype.JSONB{}
+	// generate uuid
+	id:= uuid.New()
+	integrations = append(integrations, integration.Integration{
+			ProviderID: id.String(),
+			Name:       credentials.OrganizationName,
 			Labels:     integrationLabelsJsonb,
 		})
-	}
+
+	
 
 	return integrations, nil
 }
