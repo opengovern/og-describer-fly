@@ -27,7 +27,7 @@ type Response struct {
 func Discover(token string,organization_name string) ([]App, error) {
 	var response Response
 
-	url := fmt.Sprintf("https://api.buildpacks.io/v1/apps?org_slug=%s", organization_name)
+	url := fmt.Sprintf("https://api.machines.dev/v1/apps?org_slug=%s", organization_name)
 
 	client := http.DefaultClient
 

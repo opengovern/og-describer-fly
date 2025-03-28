@@ -57,6 +57,7 @@ func (i *Integration) DiscoverIntegrations(jsonData []byte) ([]integration.Integ
 	var integrations []integration.Integration
 	apps, err := FlyIntegrationDiscovery(ConfigDiscovery{
 		Token: credentials.Token,
+		OrganizationName: credentials.OrganizationName,
 	})
 	if err != nil {
 		return nil, err

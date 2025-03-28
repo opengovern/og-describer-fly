@@ -17,7 +17,7 @@ type ConfigHealthCheck struct {
 func IsHealthy(token string) error {
 	var app App
 
-	url := "https://api.buildpacks.io/v1/apps?org_slug=personal"
+	url := "https://api.machines.dev/v1/apps?org_slug=personal"
 
 	client := http.DefaultClient
 
