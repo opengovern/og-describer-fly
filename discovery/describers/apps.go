@@ -4,21 +4,23 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/opengovern/og-describer-fly/discovery/pkg/models"
-	"github.com/opengovern/og-describer-fly/discovery/provider"
-	resilientbridge "github.com/opengovern/resilient-bridge"
+	"io"
+	"net/http"
 	"net/url"
 	"sync"
+
+	"github.com/opengovern/og-describer-fly/discovery/pkg/models"
+	"github.com/opengovern/og-describer-fly/discovery/provider"
 )
 
-func ListApps(ctx context.Context, handler *resilientbridge.ResilientBridge,org_slug string, stream *models.StreamSender) ([]models.Resource, error) {
+func ListApps(ctx context.Context, token string,org_slug string, stream *models.StreamSender) ([]models.Resource, error) {
 	var wg sync.WaitGroup
 	flyChan := make(chan models.Resource)
 	errorChan := make(chan error, 1) // Buffered channel to capture errors
 	go func() {
 		defer close(flyChan)
 		defer close(errorChan)
-		if err := processApps(ctx, handler, flyChan, &wg,org_slug); err != nil {
+		if err := processApps(ctx, token, flyChan, &wg,org_slug); err != nil {
 			errorChan <- err // Send error to the error channel
 		}
 		wg.Wait()
@@ -44,8 +46,8 @@ func ListApps(ctx context.Context, handler *resilientbridge.ResilientBridge,org_
 	}
 }
 
-func GetApp(ctx context.Context, handler *resilientbridge.ResilientBridge, appName string, resourceID string) (*models.Resource, error) {
-	app, err := processApp(ctx, handler, resourceID)
+func GetApp(ctx context.Context, token string, appName string, resourceID string) (*models.Resource, error) {
+	app, err := processApp(ctx, token, resourceID)
 	if err != nil {
 		return nil, err
 	}
@@ -62,28 +64,32 @@ func GetApp(ctx context.Context, handler *resilientbridge.ResilientBridge, appNa
 	return &value, nil
 }
 
-func processApps(ctx context.Context, handler *resilientbridge.ResilientBridge, flyChan chan<- models.Resource, wg *sync.WaitGroup,org_slug string) error {
+func processApps(ctx context.Context, token string, flyChan chan<- models.Resource, wg *sync.WaitGroup,org_slug string) error {
 	var ListAppResponse provider.ListAppsResponse
-	baseURL := "/apps"
+	baseURL := "https://api.machines.dev/v1/apps"
 
 	params := url.Values{}
 	params.Set("org_slug", org_slug)
 	finalURL := fmt.Sprintf("%s?%s", baseURL, params.Encode())
-
-	req := &resilientbridge.NormalizedRequest{
-		Method:   "GET",
-		Endpoint: finalURL,
-		Headers:  map[string]string{"Content-Type": "application/json"},
+	// make an HTTP request
+	// with http/net
+	req, err := http.NewRequest("GET", finalURL, nil)
+	if err != nil {
+		return fmt.Errorf("error creating request: %w", err)
 	}
-	resp, err := handler.Request("fly", req)
+	req.Header.Set("Authorization", "Bearer "+token)
+	client := &http.Client{}
+	resp, err := client.Do(req)
 	if err != nil {
 		return fmt.Errorf("request execution failed: %w", err)
 	}
+	defer resp.Body.Close()
 	if resp.StatusCode >= 400 {
-		return fmt.Errorf("error %d: %s", resp.StatusCode, string(resp.Data))
+		return fmt.Errorf("error %d: %s", resp.StatusCode, string(resp.Status))
 	}
+	body, err := io.ReadAll(resp.Body)
 
-	if err = json.Unmarshal(resp.Data, &ListAppResponse); err != nil {
+	if err = json.Unmarshal(body, &ListAppResponse); err != nil {
 		return fmt.Errorf("error parsing response: %w", err)
 	}
 
@@ -107,28 +113,41 @@ func processApps(ctx context.Context, handler *resilientbridge.ResilientBridge, 
 	return nil
 }
 
-func processApp(ctx context.Context, handler *resilientbridge.ResilientBridge, resourceID string) (*provider.AppJSON, error) {
+func processApp(ctx context.Context, token string, resourceID string) (*provider.AppJSON, error) {
 	var app provider.AppJSON
-	baseURL := "/apps/"
-
+	baseURL := "https://api.machines.dev/v1/apps/"
 	finalURL := fmt.Sprintf("%s%s", baseURL, resourceID)
 
-	req := &resilientbridge.NormalizedRequest{
-		Method:   "GET",
-		Endpoint: finalURL,
-		Headers:  map[string]string{"accept": "application/json"},
+	// make an HTTP request
+	// with http/net
+	req, err := http.NewRequest("GET", finalURL, nil)
+	if err != nil {
+		return nil,fmt.Errorf("error creating request: %w", err)
 	}
+	req.Header.Set("Authorization", "Bearer "+token)
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil,fmt.Errorf("request execution failed: %w", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode >= 400 {
+		return nil,fmt.Errorf("error %d: %s", resp.StatusCode, string(resp.Status))
+	}
+	body, err := io.ReadAll(resp.Body)
 
-	resp, err := handler.Request("fly", req)
+
+
+	
 	if err != nil {
 		return nil, fmt.Errorf("request execution failed: %w", err)
 	}
 
 	if resp.StatusCode >= 400 {
-		return nil, fmt.Errorf("error %d: %s", resp.StatusCode, string(resp.Data))
+		return nil, fmt.Errorf("error %d: %s", resp.StatusCode, string(body))
 	}
 
-	if err = json.Unmarshal(resp.Data, &app); err != nil {
+	if err = json.Unmarshal(body, &app); err != nil {
 		return nil, fmt.Errorf("error parsing response: %w", err)
 	}
 

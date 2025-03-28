@@ -4,15 +4,16 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 	"net/url"
 	"sync"
 
 	"github.com/opengovern/og-describer-fly/discovery/pkg/models"
 	"github.com/opengovern/og-describer-fly/discovery/provider"
-	resilientbridge "github.com/opengovern/resilient-bridge"
 )
 
-func ListMachines(ctx context.Context, handler *resilientbridge.ResilientBridge, org_slug string, stream *models.StreamSender) ([]models.Resource, error) {
+func ListMachines(ctx context.Context, token string, org_slug string, stream *models.StreamSender) ([]models.Resource, error) {
 	var wg sync.WaitGroup
 	flyChan := make(chan models.Resource)
 	errorChan := make(chan error, 1) // Buffered channel to capture errors
@@ -20,7 +21,7 @@ func ListMachines(ctx context.Context, handler *resilientbridge.ResilientBridge,
 	go func() {
 		defer close(flyChan)
 		defer close(errorChan)
-		if err := processMachines(ctx, handler, org_slug, flyChan, &wg); err != nil {
+		if err := processMachines(ctx, token, org_slug, flyChan, &wg); err != nil {
 			errorChan <- err // Send error to the error channel
 		}
 		wg.Wait()
@@ -46,8 +47,8 @@ func ListMachines(ctx context.Context, handler *resilientbridge.ResilientBridge,
 	}
 }
 
-func GetMachine(ctx context.Context, handler *resilientbridge.ResilientBridge, appName string, resourceID string) (*models.Resource, error) {
-	machine, err := processMachine(ctx, handler, appName, resourceID)
+func GetMachine(ctx context.Context, token string, appName string, resourceID string) (*models.Resource, error) {
+	machine, err := processMachine(ctx, token, appName, resourceID)
 	if err != nil {
 		return nil, err
 	}
@@ -452,53 +453,65 @@ func GetMachine(ctx context.Context, handler *resilientbridge.ResilientBridge, a
 	return &value, nil
 }
 
-func processMachines(ctx context.Context, handler *resilientbridge.ResilientBridge, org_slug string, flyChan chan<- models.Resource, wg *sync.WaitGroup) error {
+func processMachines(ctx context.Context, token string, org_slug string, flyChan chan<- models.Resource, wg *sync.WaitGroup) error {
 	var ListAppResponse provider.ListAppsResponse
-	baseURL := "/apps"
+	baseURL := "https://api.machines.dev/v1/apps"
 
 	params := url.Values{}
 	params.Set("org_slug", org_slug)
 	finalURL := fmt.Sprintf("%s?%s", baseURL, params.Encode())
-
-	req := &resilientbridge.NormalizedRequest{
-		Method:   "GET",
-		Endpoint: finalURL,
-		Headers:  map[string]string{"Content-Type": "application/json"},
+	// make an HTTP request
+	// with http/net
+	req, err := http.NewRequest("GET", finalURL, nil)
+	if err != nil {
+		return fmt.Errorf("error creating request: %w", err)
 	}
-	resp, err := handler.Request("fly", req)
+	req.Header.Set("Authorization", "Bearer "+token)
+	client := &http.Client{}
+	resp, err := client.Do(req)
 	if err != nil {
 		return fmt.Errorf("request execution failed: %w", err)
 	}
+	defer resp.Body.Close()
 	if resp.StatusCode >= 400 {
-		return fmt.Errorf("error %d: %s", resp.StatusCode, string(resp.Data))
+		return fmt.Errorf("error %d: %s", resp.StatusCode, string(resp.Status))
 	}
+	body, err := io.ReadAll(resp.Body)
 
-	if err = json.Unmarshal(resp.Data, &ListAppResponse); err != nil {
+	if err = json.Unmarshal(body, &ListAppResponse); err != nil {
 		return fmt.Errorf("error parsing response: %w", err)
 	}
 	for _, app := range ListAppResponse.Apps{
 		var machines []provider.MachineJSON
 
-	baseURL1 := "/apps/"
+	baseURL1 := "https://api.machines.dev/v1/apps/"
 
 	finalURL1 := fmt.Sprintf("%s%s/machines", baseURL1, app.Name)
-
-	req := &resilientbridge.NormalizedRequest{
-		Method:   "GET",
-		Endpoint: finalURL1,
-		Headers:  map[string]string{"accept": "application/json"},
+	req, err := http.NewRequest("GET", finalURL1, nil)
+	if err != nil {
+		return fmt.Errorf("error creating request: %w", err)
 	}
+	req.Header.Set("Authorization", "Bearer "+token)
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("request execution failed: %w", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode >= 400 {
+		return fmt.Errorf("error %d: %s", resp.StatusCode, string(resp.Status))
+	}
+	body, err := io.ReadAll(resp.Body)
 
-	resp, err := handler.Request("fly", req)
 	if err != nil {
 		return fmt.Errorf("request execution failed: %w", err)
 	}
 
 	if resp.StatusCode >= 400 {
-		return fmt.Errorf("error %d: %s", resp.StatusCode, string(resp.Data))
+		return fmt.Errorf("error %d: %s", resp.StatusCode, string(body))
 	}
 
-	if err = json.Unmarshal(resp.Data, &machines); err != nil {
+	if err = json.Unmarshal(body, &machines); err != nil {
 		return fmt.Errorf("error parsing response: %w", err)
 	}
 
@@ -914,28 +927,39 @@ func processMachines(ctx context.Context, handler *resilientbridge.ResilientBrid
 	return nil
 }
 
-func processMachine(ctx context.Context, handler *resilientbridge.ResilientBridge, appName, resourceID string) (*provider.MachineJSON, error) {
+func processMachine(ctx context.Context, token string, appName, resourceID string) (*provider.MachineJSON, error) {
 	var machine provider.MachineJSON
-	baseURL := "/apps/"
+	baseURL := "https://api.machines.dev/v1/apps/"
 
 	finalURL := fmt.Sprintf("%s%s/machines/%s", baseURL, appName, resourceID)
 
-	req := &resilientbridge.NormalizedRequest{
-		Method:   "GET",
-		Endpoint: finalURL,
-		Headers:  map[string]string{"accept": "application/json"},
+	req, err := http.NewRequest("GET", finalURL, nil)
+	if err != nil {
+		return nil, fmt.Errorf("error creating request: %w", err)
+		
 	}
+	req.Header.Set("Authorization", "Bearer "+token)
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil,fmt.Errorf("request execution failed: %w", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode >= 400 {
+		return nil,fmt.Errorf("error %d: %s", resp.StatusCode, string(resp.Status))
+	}
+	body, err := io.ReadAll(resp.Body)
 
-	resp, err := handler.Request("fly", req)
+	
 	if err != nil {
 		return nil, fmt.Errorf("request execution failed: %w", err)
 	}
 
 	if resp.StatusCode >= 400 {
-		return nil, fmt.Errorf("error %d: %s", resp.StatusCode, string(resp.Data))
+		return nil, fmt.Errorf("error %d: %s", resp.StatusCode, string(body))
 	}
 
-	if err = json.Unmarshal(resp.Data, &machine); err != nil {
+	if err = json.Unmarshal(body, &machine); err != nil {
 		return nil, fmt.Errorf("error parsing response: %w", err)
 	}
 

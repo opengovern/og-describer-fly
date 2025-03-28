@@ -705,8 +705,6 @@ github.com/olekukonko/tablewriter v0.0.5 h1:P2Ga83D34wi1o9J6Wh1mRuqd4mF/x/lgBS7N
 github.com/olekukonko/tablewriter v0.0.5/go.mod h1:hPp6KlRPjbx+hW8ykQs1w3UBbZlj6HuIJcUGPhkA7kY=
 github.com/opengovern/og-util v1.12.0 h1:D/1khsUlO2LZGBN+YrSbupjJ5MxsZeg7z9Mg+o9I3eU=
 github.com/opengovern/og-util v1.12.0/go.mod h1:9uNpGalixRoQkUzPPBdT+JG1epg8FTRx/qmkfTyUZHE=
-github.com/opengovern/resilient-bridge v0.0.0-20250118110553-00869bf737ba h1:fJ6ZZ53J1v/YJYl21y5odyLpT8CfHXR3r4C5kpxIrUk=
-github.com/opengovern/resilient-bridge v0.0.0-20250118110553-00869bf737ba/go.mod h1:zEulaGgccj5tPXGiudGz17NRhXAk2HHh+GPj2VkjNq0=
 github.com/opensearch-project/opensearch-go/v2 v2.3.0 h1:nQIEMr+A92CkhHrZgUhcfsrZjibvB3APXf2a1VwCmMQ=
 github.com/opensearch-project/opensearch-go/v2 v2.3.0/go.mod h1:8LDr9FCgUTVoT+5ESjc2+iaZuldqE+23Iq0r1XeNue8=
 github.com/pganalyze/pg_query_go/v4 v4.2.3 h1:cNLqyiVMasV7YGWyYV+fkXyHp32gDfXVNCqoHztEGNk=
