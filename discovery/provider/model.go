@@ -14,14 +14,14 @@ type AppJSON struct {
 	ID           string `json:"id"`
 	MachineCount int    `json:"machine_count,omitempty"`
 	Name         string `json:"name"`
-	Network      any    `json:"network,omitempty"`
+	Network      string    `json:"network,omitempty"`
 }
 
 type AppDescription struct {
 	ID           string
 	MachineCount int
 	Name         string
-	Network      any
+	Network      string
 }
 
 type CheckJSON struct {

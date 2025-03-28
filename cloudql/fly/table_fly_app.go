@@ -22,7 +22,7 @@ func tableFlyApp(ctx context.Context) *plugin.Table {
 			{Name: "id", Type: proto.ColumnType_STRING, Transform: transform.FromField("Description.ID"), Description: "The unique identifier for the app."},
 			{Name: "machine_count", Type: proto.ColumnType_INT, Transform: transform.FromField("Description.MachineCount"), Description: "The number of machines associated with the app."},
 			{Name: "name", Type: proto.ColumnType_STRING, Transform: transform.FromField("Description.Name"), Description: "The name of the app."},
-			{Name: "network", Type: proto.ColumnType_JSON, Transform: transform.FromField("Description.Network"), Description: "The network configuration of the app."},
+			{Name: "network", Type: proto.ColumnType_STRING, Transform: transform.FromField("Description.Network"), Description: "The network configuration of the app."},
 		}),
 	}
 }
