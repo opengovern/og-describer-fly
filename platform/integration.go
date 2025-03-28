@@ -68,6 +68,17 @@ func (i *Integration) DiscoverIntegrations(jsonData []byte) ([]integration.Integ
 	integrationLabelsJsonb := pgtype.JSONB{}
 	// generate uuid
 	id:= uuid.New()
+	labels := map[string]string{
+			"OrganizationName": credentials.OrganizationName,
+		}
+	labelsJsonData, err := json.Marshal(labels)
+	if err != nil {
+		return nil, err
+	}
+	err = integrationLabelsJsonb.Set(labelsJsonData)
+	if err != nil {
+		return nil, err
+	}
 	integrations = append(integrations, integration.Integration{
 			ProviderID: id.String(),
 			Name:       credentials.OrganizationName,
