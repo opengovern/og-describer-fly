@@ -57,8 +57,7 @@ var describerCmd = &cobra.Command{
 		logger, _ := zap.NewProduction()
 
 		creds, err := provider.AccountCredentialsFromMap(map[string]any{
-			"token": "FlyV1 fm2_lJPECAAAAAAACBDXxBDc7AOIpysUbyAE6hOgTWhjwrVodHRwczovL2FwaS5mbHkuaW8vdjGUAJLOAA42Kh8Lk7lodHRwczovL2FwaS5mbHkuaW8vYWFhL3YxxDyjfEVeWsnCclxl+QXa7yPP34bZL771rGG7lrEix6m7fmPYXrYy3sjzwk1amWEbxNb/V6ul+GcMow4P0HTETq9TAH1MlKbj++5gPE94S+yNuuyLR+R9S2wDU6dXbrra1cSJqVT5+Zk5JMsrZlSS/b183TYPjXEBYQcsxUB2f4g05enH6hJrtlKzxPclKMQgxWjOZAN2cJpUF94raFFJzak3GH0mVD7zjTCrOI+JT4A=,fm2_lJPETq9TAH1MlKbj++5gPE94S+yNuuyLR+R9S2wDU6dXbrra1cSJqVT5+Zk5JMsrZlSS/b183TYPjXEBYQcsxUB2f4g05enH6hJrtlKzxPclKMQQnb0koZgeEm/UjF+2Ncod68O5aHR0cHM6Ly9hcGkuZmx5LmlvL2FhYS92MZgEks5n5ddezmhcfnwXzgANvzsKkc4ADb87DMQQIbGTKDrnJnQhvnTfVI8j5cQgKCthpxQcBTiANiYJXq9MGqy7hA0abuTiMtKGyVdORzM=",
-			"organization_slug":"anil-chandra",
+		
 		})
 		if err != nil {
 			return fmt.Errorf(" account credentials: %w", err)
